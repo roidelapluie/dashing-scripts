@@ -4,7 +4,7 @@ require "uri"
 hostname="foreman.example.com"
 
 SCHEDULER.every '4s' do
-  http = Net::HTTP.new(hostname, 3000)
+  http = Net::HTTP.new(hostname, 443)
   http.use_ssl = true
   request = Net::HTTP::Get.new("/api/dashboard")
   request.basic_auth("USER", "PASS")
