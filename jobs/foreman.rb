@@ -6,27 +6,27 @@ hostname="foreman.example.com"
 SCHEDULER.every '4s' do
   http = Net::HTTP.new(hostname, 443)
   http.use_ssl = true
-  hosts_request = Net::HTTP::Get.new("/hosts.json")
-  hosts_request.basic_auth("USER", "PASS")
-  hosts_response = http.request(hosts_request)
-  hosts = JSON.parse(hosts_response.body)
-  error_request = Net::HTTP::Get.new("/hosts/errors.json")
-  error_request.basic_auth("USER", "PASS")
-  error_response = http.request(error_request)
-  errors = JSON.parse(error_response.body)
+  request = Net::HTTP::Get.new("/api/dashboard")
+  request.basic_auth("USER", "PASS")
+  response = http.request(request)
 
-  total_hosts = hosts.length
-  total_error = errors.length
-
-  if total_error > 0 then
-    value = total_error
-    color = 'red'
+  hosts = JSON.parse(response.body)["total_hosts"]
+  warnings = JSON.parse(response.body)["out_of_sync_hosts"]
+  errors = JSON.parse(response.body)["bad_hosts"]
+ 
+  if errors > 0 then
+    value = errors
+    color = 'red' + "-blink"
+  elsif warnings > 0
+    value = warnings
+    color = 'yellow'
   else
-    value = total_hosts
+    value = hosts
     color = 'green'
   end
 
   send_event('foreman', {
     value: value,
-    color: color })
+    color: color
+  })
 end
